@@ -19,13 +19,14 @@ from PySide6.QtWidgets import (
 )
 
 from budget_tracker.models import Category
-from budget_tracker.services.budgets import BudgetError, BudgetLine, BudgetService
+from budget_tracker.services.budgets import NEAR, OVER, BudgetError, BudgetLine, BudgetService
 from budget_tracker.services.categories import CategoryService
 from budget_tracker.services.money import format_cents
-from budget_tracker.ui.colors import budget_color
+from budget_tracker.ui.colors import bar_style, budget_color
 from budget_tracker.ui.settings import month_label
 
 COLUMNS = ["Category", "Progress", "Used", "Spent", "Limit", "Left"]
+STATUS_WORDS = {NEAR: "near limit", OVER: "over budget"}
 
 
 class BudgetDialog(QDialog):
@@ -86,6 +87,8 @@ class BudgetsView(QWidget):
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().hide()
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        # fits "109%  ·  over budget" without cutting it off
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.table.doubleClicked.connect(self.edit)
         self.table.itemSelectionChanged.connect(self.update_buttons)
 
@@ -119,6 +122,8 @@ class BudgetsView(QWidget):
         for row, line in enumerate(self.lines):
             left = f"{format_cents(-line.left_cents)} over" if line.left_cents < 0 else format_cents(line.left_cents)
             used = f"{line.fraction:.0%}"  # the real percentage, even past 100%
+            if status := STATUS_WORDS.get(line.level):  # says it in words too, never colour alone
+                used += f"  ·  {status}"
             cells = [line.category, "", used, format_cents(line.spent_cents), format_cents(line.limit_cents), left]
             for col, text in enumerate(cells):
                 item = QTableWidgetItem(text)
@@ -174,9 +179,5 @@ def _progress_bar(line: BudgetLine) -> QProgressBar:
     bar.setRange(0, 100)
     bar.setValue(min(100, round(line.fraction * 100)))
     bar.setTextVisible(False)  # no text colour reads well on both the fill and the track; see the Used column
-    # A stylesheet is the simple way to colour one bar; the grey track works in light and dark.
-    bar.setStyleSheet(
-        "QProgressBar { border: none; border-radius: 4px; background: rgba(128, 128, 128, 60); margin: 6px 4px; }"
-        f"QProgressBar::chunk {{ border-radius: 4px; background: {budget_color(line.level)}; }}"
-    )
+    bar.setStyleSheet(bar_style(budget_color(line.level)))
     return bar

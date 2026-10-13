@@ -1,16 +1,20 @@
 """Smoke tests for the real window: every tab builds and shows the demo data, and the main flows
 work end to end. Runs offscreen against an in-memory database; settings go to a temp .ini file."""
 
+from datetime import date
 from pathlib import Path
 
 import pytest
 from PySide6.QtCore import QSettings
+from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QApplication, QMessageBox
 
+import budget_tracker.ui.colors as colors
 import budget_tracker.ui.settings as settings
 from budget_tracker.db.connection import connect
 from budget_tracker.services.app_services import build_services
 from budget_tracker.services.csv_import import read_rows
+from budget_tracker.services.demo import demo_transactions
 from budget_tracker.ui.import_dialog import ImportDialog
 from budget_tracker.ui.main_window import MainWindow
 from budget_tracker.ui.rules_view import RuleDialog
@@ -41,6 +45,7 @@ def window(tmp_path, monkeypatch, asked):
     # Never touch the real registry: every app_settings() call gets a temp .ini file instead.
     ini = str(tmp_path / "settings.ini")
     monkeypatch.setattr(settings, "QSettings", lambda *_: QSettings(ini, QSettings.Format.IniFormat))
+    colors.reload()  # forget colors cached from another test's settings
     # Message boxes would block waiting for a click; acknowledge them automatically.
     monkeypatch.setattr(QMessageBox, "information", lambda *_: QMessageBox.StandardButton.Ok)
     monkeypatch.setattr(QMessageBox, "warning", lambda *_: QMessageBox.StandardButton.Ok)
@@ -49,6 +54,7 @@ def window(tmp_path, monkeypatch, asked):
     w.show()
     yield w
     w.close()
+    app.setPalette(QPalette())  # back to the theme's own colors for the next test
     app.processEvents()
 
 
@@ -131,6 +137,7 @@ def test_settings_menu_changes_formats_and_theme(window):
     assert set(submenu) == {"Theme", "Month format", "Date format"}
     actions = [a.text().replace("&", "") for a in menu.actions() if not a.menu() and not a.isSeparator()]
     assert actions == [
+        "Colors…",
         "Back up data…",
         "Restore from backup…",
         "Delete all data…",
@@ -210,7 +217,9 @@ def test_demo_mode_switches_windows_and_leaves_real_data_alone(window, monkeypat
     switcher.window.explore_demo_requested.emit()
     demo_window = switcher.window
     assert demo_window.demo and "demo data" in demo_window.windowTitle()
-    assert demo_window.transactions_view.proxy.rowCount() > 400
+    assert demo_window.transactions_view.proxy.rowCount() == len(
+        demo_transactions(date.today())
+    )  # any day of the month
     backup_action = next(a for a in demo_window.tabs.cornerWidget().menu().actions() if "Back up" in a.text())
     assert not backup_action.isEnabled()  # no backing up demo data
 

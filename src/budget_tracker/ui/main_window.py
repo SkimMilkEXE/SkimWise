@@ -24,6 +24,8 @@ from budget_tracker.services.backup import BackupError
 from budget_tracker.ui.budgets_view import BudgetsView
 from budget_tracker.ui.categories_view import CategoriesView
 from budget_tracker.ui.charts_view import ChartsView
+from budget_tracker.ui.colors import apply_background
+from budget_tracker.ui.colors_dialog import ColorsDialog
 from budget_tracker.ui.rules_view import RulesView
 from budget_tracker.ui.settings import APP_NAME, DATE_FORMATS, MONTH_FORMATS, TAGLINE, app_settings
 from budget_tracker.ui.subscriptions_view import SubscriptionsView
@@ -61,9 +63,10 @@ class MainWindow(QMainWindow):
         tabs.currentChanged.connect(self.refresh_current_tab)
         # Redraw on light/dark switches too, so theme-dependent colours (budget bars) update.
         # (A method, not a lambda: Qt disconnects it automatically when this window is deleted.)
-        QGuiApplication.styleHints().colorSchemeChanged.connect(self.refresh_current_tab)
+        QGuiApplication.styleHints().colorSchemeChanged.connect(self._theme_changed)
         # Settings sits at the right end of the tab bar instead of in a separate menu bar.
         tabs.setCornerWidget(self._settings_button(), Qt.Corner.TopRightCorner)
+        apply_background(QGuiApplication.instance())  # each light/dark mode can have its own
 
         credit = QLabel("Built by SkimMilk.EXE")
         credit.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -92,6 +95,7 @@ class MainWindow(QMainWindow):
         dates = {key: label for key, (label, _fmt, _qt) in DATE_FORMATS.items()}
         current = self.settings.value("date_format", "iso")
         self._add_choice_menu(menu, "&Date format", dates, current, self.set_date_format)
+        menu.addAction("&Colors…").triggered.connect(self.edit_colors)
 
         menu.addSeparator()
         data_actions = (
@@ -140,6 +144,15 @@ class MainWindow(QMainWindow):
         exit_btn.clicked.connect(self.exit_demo_requested)
         row.addWidget(exit_btn)
         return banner
+
+    def edit_colors(self) -> None:
+        if ColorsDialog(self).exec():
+            apply_background(QGuiApplication.instance())
+            self.refresh_current_tab()  # other tabs pick the new colors up when they're shown
+
+    def _theme_changed(self, *_) -> None:
+        apply_background(QGuiApplication.instance())  # the other mode may have a different background
+        self.refresh_current_tab()
 
     def show_about(self) -> None:
         data = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)

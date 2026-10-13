@@ -26,6 +26,7 @@
 - **Bulk edits**: select several transactions to categorize or delete them together
 - **Backup and restore**, plus **delete all data** for a fresh start
 - **Demo data** to explore every screen before importing your own
+- **Your colors**: pick the background and the colors for amounts, budget bars and charts in **Settings → Colors…**, or use the **Color-blind friendly** preset (blue and amber instead of green and red). Budget status is always written out too ("near limit", "over budget"), so it never depends on color alone
 - Light and dark themes, and your choice of date formats
 
 <p align="center">
@@ -53,6 +54,7 @@ Because there's no cloud copy, use **Settings → Back up data…** now and then
 - **PDF statements need real text.** Statements downloaded from your bank's website work. Scanned paper statements are just pictures of text, so use your bank's CSV export for those.
 - **PDF layouts vary by bank.** Reading is tuned for typical US checking statements (tested with M&T). The import always shows a preview before anything is saved, so check it the first time you import from a new bank.
 - **Long PDF descriptions** that wrap onto a second line keep only the first line.
+- **Custom backgrounds use Qt's standard look.** Windows 11's own buttons and headers can't be recolored, so with a custom background SkimWise switches to Qt's Fusion style. Click **Theme default** next to Background to get the Windows 11 look back.
 - **One budget per category** applies to every month, so changing a limit also changes how past months compare against it.
 - **Windows only** for now. A Linux build may come later.
 
