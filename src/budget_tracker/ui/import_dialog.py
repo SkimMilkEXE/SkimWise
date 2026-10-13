@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QFormLayout,
     QHBoxLayout,
-    QHeaderView,
     QLabel,
     QLineEdit,
     QMessageBox,
@@ -34,6 +33,7 @@ from budget_tracker.services.csv_import import (
 )
 from budget_tracker.services.money import format_cents
 from budget_tracker.ui.colors import amount_color
+from budget_tracker.ui.reading import fit_columns, stripe
 from budget_tracker.ui.settings import date_format
 
 NEW_PROFILE = "(New profile)"
@@ -78,10 +78,11 @@ class ImportDialog(QDialog):
 
         self.summary = QLabel()
         self.table = QTableWidget(0, 5)
+        stripe(self.table)
         self.table.setHorizontalHeaderLabels(["Status", "Date", "Description", "Category", "Amount"])
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().hide()
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        fit_columns(self.table, stretch=2)  # description
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
         self.import_btn = buttons.addButton("Import", QDialogButtonBox.ButtonRole.AcceptRole)

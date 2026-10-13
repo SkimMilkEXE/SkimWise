@@ -134,7 +134,7 @@ def test_settings_menu_changes_formats_and_theme(window):
     import_demo(window)
     menu = window.tabs.cornerWidget().menu()
     submenu = {a.text().replace("&", ""): a.menu() for a in menu.actions() if a.menu()}
-    assert set(submenu) == {"Theme", "Month format", "Date format"}
+    assert set(submenu) == {"Theme", "Month format", "Date format", "Reading"}
     actions = [a.text().replace("&", "") for a in menu.actions() if not a.menu() and not a.isSeparator()]
     assert actions == [
         "Colors…",

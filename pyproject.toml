@@ -23,7 +23,7 @@ version = { attr = "budget_tracker.__version__" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-budget_tracker = ["assets/*"]  # ship icons with the package, not just .py files
+budget_tracker = ["assets/*", "assets/fonts/*"]  # ship icons and fonts with the package, not just .py files
 
 [tool.ruff]
 line-length = 120

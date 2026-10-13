@@ -6,7 +6,6 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QFormLayout,
     QHBoxLayout,
-    QHeaderView,
     QLabel,
     QLineEdit,
     QMessageBox,
@@ -20,6 +19,7 @@ from PySide6.QtWidgets import (
 from budget_tracker.models import MONTHLY, YEARLY, RecurringItem
 from budget_tracker.services.money import count, format_cents
 from budget_tracker.services.recurring_detection import Candidate, RecurringError, RecurringService, totals
+from budget_tracker.ui.reading import fit_columns, stripe
 from budget_tracker.ui.settings import date_format
 
 FREQUENCY_LABELS = {MONTHLY: "Monthly", YEARLY: "Yearly"}
@@ -210,12 +210,13 @@ class SubscriptionsView(QWidget):
 
 def _table(headers: list[str]) -> QTableWidget:
     table = QTableWidget(0, len(headers))
+    stripe(table)
     table.setHorizontalHeaderLabels(headers)
     table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
     table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
     table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
     table.verticalHeader().hide()
-    table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+    fit_columns(table, stretch=0)  # name
     return table
 
 

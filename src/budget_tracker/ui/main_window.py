@@ -26,6 +26,7 @@ from budget_tracker.ui.categories_view import CategoriesView
 from budget_tracker.ui.charts_view import ChartsView
 from budget_tracker.ui.colors import apply_background
 from budget_tracker.ui.colors_dialog import ColorsDialog
+from budget_tracker.ui.reading import FONTS, TEXT_SIZES, apply_reading, font_choice, striped_rows, text_size
 from budget_tracker.ui.rules_view import RulesView
 from budget_tracker.ui.settings import APP_NAME, DATE_FORMATS, MONTH_FORMATS, TAGLINE, app_settings
 from budget_tracker.ui.subscriptions_view import SubscriptionsView
@@ -39,6 +40,7 @@ class MainWindow(QMainWindow):
     # Ask main.py to swap this window for one showing demo data, or back to the real data.
     explore_demo_requested = Signal()
     exit_demo_requested = Signal()
+    rebuild_requested = Signal()  # reading options changed: main.py swaps in a fresh window
 
     def __init__(self, services: AppServices, demo: bool = False):
         super().__init__()
@@ -66,7 +68,6 @@ class MainWindow(QMainWindow):
         QGuiApplication.styleHints().colorSchemeChanged.connect(self._theme_changed)
         # Settings sits at the right end of the tab bar instead of in a separate menu bar.
         tabs.setCornerWidget(self._settings_button(), Qt.Corner.TopRightCorner)
-        apply_background(QGuiApplication.instance())  # each light/dark mode can have its own
 
         credit = QLabel("Built by SkimMilk.EXE")
         credit.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -96,6 +97,17 @@ class MainWindow(QMainWindow):
         current = self.settings.value("date_format", "iso")
         self._add_choice_menu(menu, "&Date format", dates, current, self.set_date_format)
         menu.addAction("&Colors…").triggered.connect(self.edit_colors)
+
+        # reading comfort: font, text size and striped rows
+        reading = menu.addMenu("&Reading")
+        fonts = {key: label for key, (label, _family) in FONTS.items()}
+        self._add_choice_menu(reading, "&Font", fonts, font_choice(), lambda k: self.set_reading("font", k))
+        sizes = TEXT_SIZES
+        self._add_choice_menu(reading, "Text &size", sizes, text_size(), lambda k: self.set_reading("text_size", k))
+        stripes = reading.addAction("&Striped table rows")
+        stripes.setCheckable(True)
+        stripes.setChecked(striped_rows())
+        stripes.toggled.connect(lambda on: self.set_reading("striped_rows", on))
 
         menu.addSeparator()
         data_actions = (
@@ -145,14 +157,23 @@ class MainWindow(QMainWindow):
         row.addWidget(exit_btn)
         return banner
 
+    def set_reading(self, key: str, value) -> None:
+        self.settings.setValue(f"reading/{key}", value)
+        apply_reading(QGuiApplication.instance())
+        self.rebuild_requested.emit()
+
     def edit_colors(self) -> None:
         if ColorsDialog(self).exec():
-            apply_background(QGuiApplication.instance())
-            self.refresh_current_tab()  # other tabs pick the new colors up when they're shown
+            self._redraw_for_background()
 
     def _theme_changed(self, *_) -> None:
-        apply_background(QGuiApplication.instance())  # the other mode may have a different background
-        self.refresh_current_tab()
+        self._redraw_for_background()  # the other mode may have a different background
+
+    def _redraw_for_background(self) -> None:
+        if apply_background(QGuiApplication.instance()):
+            self.rebuild_requested.emit()  # the style changed: a fresh window keeps fonts right
+        else:
+            self.refresh_current_tab()  # other tabs pick the new colors up when they're shown
 
     def show_about(self) -> None:
         data = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)

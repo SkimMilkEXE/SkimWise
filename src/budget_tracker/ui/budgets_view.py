@@ -6,7 +6,6 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QFormLayout,
     QHBoxLayout,
-    QHeaderView,
     QLabel,
     QLineEdit,
     QMessageBox,
@@ -23,6 +22,7 @@ from budget_tracker.services.budgets import NEAR, OVER, BudgetError, BudgetLine,
 from budget_tracker.services.categories import CategoryService
 from budget_tracker.services.money import format_cents
 from budget_tracker.ui.colors import bar_style, budget_color
+from budget_tracker.ui.reading import fit_columns, stripe
 from budget_tracker.ui.settings import month_label
 
 COLUMNS = ["Category", "Progress", "Used", "Spent", "Limit", "Left"]
@@ -81,14 +81,13 @@ class BudgetsView(QWidget):
 
         self.summary = QLabel()
         self.table = QTableWidget(0, len(COLUMNS))
+        stripe(self.table)
         self.table.setHorizontalHeaderLabels(COLUMNS)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().hide()
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        # fits "109%  ·  over budget" without cutting it off
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        fit_columns(self.table, stretch=1)  # the progress bar takes the spare width
         self.table.doubleClicked.connect(self.edit)
         self.table.itemSelectionChanged.connect(self.update_buttons)
 
