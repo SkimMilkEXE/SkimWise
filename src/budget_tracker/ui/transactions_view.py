@@ -10,7 +10,6 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QFormLayout,
     QHBoxLayout,
-    QHeaderView,
     QInputDialog,
     QLabel,
     QLineEdit,
@@ -30,6 +29,7 @@ from budget_tracker.services.rules import RuleService, suggest_pattern
 from budget_tracker.services.transactions import TransactionError, TransactionService, totals
 from budget_tracker.ui.colors import amount_color
 from budget_tracker.ui.import_dialog import ImportDialog
+from budget_tracker.ui.reading import fit_columns, stripe
 from budget_tracker.ui.rules_view import RuleDialog
 from budget_tracker.ui.settings import date_format, month_label, qt_date_format
 
@@ -174,6 +174,7 @@ class TransactionsView(QWidget):
         self.proxy.setSourceModel(self.model)
         self.proxy.setSortRole(Qt.ItemDataRole.UserRole)  # sort by raw values, not display text
         self.table = QTableView()
+        stripe(self.table)
         self.table.setModel(self.proxy)
         self.table.setSortingEnabled(True)
         self.table.sortByColumn(0, Qt.SortOrder.DescendingOrder)
@@ -182,7 +183,7 @@ class TransactionsView(QWidget):
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().hide()
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        fit_columns(self.table, stretch=1)  # description
         self.table.doubleClicked.connect(self.edit)
         self.table.selectionModel().selectionChanged.connect(self.update_buttons)
 

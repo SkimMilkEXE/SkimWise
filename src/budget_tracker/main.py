@@ -9,7 +9,9 @@ from PySide6.QtWidgets import QApplication
 from budget_tracker.db.connection import connect
 from budget_tracker.services.app_services import build_services
 from budget_tracker.services.demo import demo_connection
+from budget_tracker.ui.colors import apply_background
 from budget_tracker.ui.main_window import MainWindow
+from budget_tracker.ui.reading import apply_reading, load_fonts
 from budget_tracker.ui.settings import APP_NAME, app_settings
 
 ASSETS = Path(__file__).parent / "assets"
@@ -43,11 +45,16 @@ class WindowSwitcher:
     def show_demo(self) -> None:
         self._show(build_services(demo_connection()), demo=True)  # fresh each time; discarded on exit
 
+    def rebuild(self) -> None:
+        # a fresh window with the same data, so every label picks up a new font or size
+        self._show(self.window.services, self.window.demo)
+
     def _show(self, services, demo: bool) -> None:
         old = self.window
         self.window = MainWindow(services, demo)
         self.window.explore_demo_requested.connect(self.show_demo)
         self.window.exit_demo_requested.connect(self.show_real)
+        self.window.rebuild_requested.connect(self.rebuild)
         if old:
             self.window.restoreGeometry(old.saveGeometry())  # open exactly where the old one was
         self.window.show()  # show the new window before closing the old, or the app would quit
@@ -67,6 +74,9 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName(APP_NAME)  # AppDataLocation is derived from this
     app.setWindowIcon(QIcon(str(ASSETS / "budget-icon.ico")))  # every window and dialog inherits it
+    load_fonts(ASSETS / "fonts")
+    apply_reading(app)
+    apply_background(app)  # before any window exists, so nothing has to be restyled
 
     data_dir = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation))
     move_old_data_dir(data_dir)

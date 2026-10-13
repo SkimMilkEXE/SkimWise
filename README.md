@@ -27,6 +27,7 @@
 - **Backup and restore**, plus **delete all data** for a fresh start
 - **Demo data** to explore every screen before importing your own
 - **Your colors**: pick the background and the colors for amounts, budget bars and charts in **Settings → Colors…**, or use the **Color-blind friendly** preset (blue and amber instead of green and red). Budget status is always written out too ("near limit", "over budget"), so it never depends on color alone
+- **Reading options** in **Settings → Reading**: the dyslexia-friendly **OpenDyslexic** or **Atkinson Hyperlegible** fonts, text at 125% or 150%, and striped table rows that help your eye follow a row
 - Light and dark themes, and your choice of date formats
 
 <p align="center">

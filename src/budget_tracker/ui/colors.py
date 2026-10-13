@@ -157,16 +157,18 @@ def text_color_for(background: QColor) -> QColor:
 _theme_style: str | None = None  # the platform's own style (windows11), to switch back to
 
 
-def apply_background(app) -> None:
-    # paints the chosen background for the current mode, or goes back to the theme's own look
+def apply_background(app) -> bool:
+    # paints the chosen background for the current mode, or goes back to the theme's own look.
+    # returns true when the style had to change: restyling widgets that already exist can reset
+    # their fonts, so the window should be rebuilt then
     global _theme_style
     if _theme_style is None:
         _theme_style = app.style().name()
     value = load_backgrounds()[current_mode()]
     if not value:
-        app.setStyle(_theme_style)
+        changed = _set_style(app, _theme_style)
         app.setPalette(QPalette())  # an empty palette follows the system theme again
-        return
+        return changed
 
     # the windows 11 style keeps its own light buttons and headers whatever the palette says,
     # so a custom background uses fusion, qt's style that draws everything from the palette
@@ -184,8 +186,17 @@ def apply_background(app) -> None:
         for role in (QPalette.ColorRole.WindowText, QPalette.ColorRole.Text, QPalette.ColorRole.ButtonText):
             palette.setColor(group, role, text)
         palette.setColor(group, QPalette.ColorRole.PlaceholderText, muted)
-    app.setStyle("Fusion")
+    changed = _set_style(app, "fusion")
     app.setPalette(palette)  # after setStyle, which would otherwise swap in its own palette
+    return changed
+
+
+def _set_style(app, name: str) -> bool:
+    # only restyles when it's actually a different style
+    if app.style().name().lower() == name.lower():
+        return False
+    app.setStyle(name)
+    return True
 
 
 def contrast(a: QColor, b: QColor) -> float:
