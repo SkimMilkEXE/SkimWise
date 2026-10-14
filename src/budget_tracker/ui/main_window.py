@@ -26,7 +26,18 @@ from budget_tracker.ui.categories_view import CategoriesView
 from budget_tracker.ui.charts_view import ChartsView
 from budget_tracker.ui.colors import apply_background
 from budget_tracker.ui.colors_dialog import ColorsDialog
-from budget_tracker.ui.reading import FONTS, TEXT_SIZES, apply_reading, font_choice, striped_rows, text_size
+from budget_tracker.ui.reading import (
+    FONTS,
+    HIGHLIGHT_STYLES,
+    ROW_HIGHLIGHTS,
+    TEXT_SIZES,
+    apply_reading,
+    font_choice,
+    highlight_style,
+    row_highlight,
+    striped_rows,
+    text_size,
+)
 from budget_tracker.ui.rules_view import RulesView
 from budget_tracker.ui.settings import APP_NAME, DATE_FORMATS, MONTH_FORMATS, TAGLINE, app_settings
 from budget_tracker.ui.subscriptions_view import SubscriptionsView
@@ -104,6 +115,14 @@ class MainWindow(QMainWindow):
         self._add_choice_menu(reading, "&Font", fonts, font_choice(), lambda k: self.set_reading("font", k))
         sizes = TEXT_SIZES
         self._add_choice_menu(reading, "Text &size", sizes, text_size(), lambda k: self.set_reading("text_size", k))
+        current = row_highlight()
+        self._add_choice_menu(
+            reading, "Row &highlight", ROW_HIGHLIGHTS, current, lambda k: self.set_reading("row_highlight", k)
+        )
+        current = highlight_style()
+        self._add_choice_menu(
+            reading, "Highlight st&yle", HIGHLIGHT_STYLES, current, lambda k: self.set_reading("highlight_style", k)
+        )
         stripes = reading.addAction("&Striped table rows")
         stripes.setCheckable(True)
         stripes.setChecked(striped_rows())

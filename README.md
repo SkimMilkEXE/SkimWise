@@ -24,10 +24,11 @@
 - **Charts**: spending by category, the monthly trend, and income vs expenses
 - **Subscription finder**: spots recurring charges and totals them per month and per year
 - **Bulk edits**: select several transactions to categorize or delete them together
+- **Filters** for month, category, income or expenses, and a search box, with totals for whatever is showing
 - **Backup and restore**, plus **delete all data** for a fresh start
 - **Demo data** to explore every screen before importing your own
 - **Your colors**: pick the background and the colors for amounts, budget bars and charts in **Settings → Colors…**, or use the **Color-blind friendly** preset (blue and amber instead of green and red). Budget status is always written out too ("near limit", "over budget"), so it never depends on color alone
-- **Reading options** in **Settings → Reading**: the dyslexia-friendly **OpenDyslexic** or **Atkinson Hyperlegible** fonts, text at 125% or 150%, and striped table rows that help your eye follow a row
+- **Reading options** in **Settings → Reading**: the dyslexia-friendly **OpenDyslexic** or **Atkinson Hyperlegible** fonts, text at 125% or 150%, striped table rows that help your eye follow a row, and income (or income and expense) rows highlighted with a light tint or a colored strip down the left edge
 - Light and dark themes, and your choice of date formats
 
 <p align="center">

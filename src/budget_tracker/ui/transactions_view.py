@@ -1,8 +1,10 @@
 from pathlib import Path
 
-from PySide6.QtCore import QAbstractTableModel, QDate, QModelIndex, QSortFilterProxyModel, Qt
+from PySide6.QtCore import QAbstractTableModel, QDate, QModelIndex, QRect, QSortFilterProxyModel, Qt
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QApplication,
     QComboBox,
     QDateEdit,
     QDialog,
@@ -15,12 +17,15 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QTableView,
     QVBoxLayout,
     QWidget,
 )
 
-from budget_tracker.models import NO_CATEGORY, Transaction
+from budget_tracker.models import EXPENSE, INCOME, NO_CATEGORY, Transaction
 from budget_tracker.services.categories import CategoryService
 from budget_tracker.services.csv_import import CsvImportError, ImportService, read_rows
 from budget_tracker.services.money import count, format_cents
@@ -29,11 +34,16 @@ from budget_tracker.services.rules import RuleService, suggest_pattern
 from budget_tracker.services.transactions import TransactionError, TransactionService, totals
 from budget_tracker.ui.colors import amount_color
 from budget_tracker.ui.import_dialog import ImportDialog
-from budget_tracker.ui.reading import fit_columns, stripe
+from budget_tracker.ui.reading import fit_columns, highlight_style, row_highlight, stripe
 from budget_tracker.ui.rules_view import RuleDialog
 from budget_tracker.ui.settings import date_format, month_label, qt_date_format
 
 UNCATEGORIZED = "Uncategorized"
+HIGHLIGHT_ROLE = Qt.ItemDataRole.UserRole + 1  # the strip color for a row, or None
+STRIP_SPACE_ROLE = Qt.ItemDataRole.UserRole + 2  # true when strips are on, so every date lines up
+TINT_STRENGTH = 0.08  # strongest tint that keeps amount text at 4.5:1 in every preset and mode
+STRIP_WIDTH = 4
+STRIP_GAP = 4  # space between the strip and the text
 
 
 class TransactionTableModel(QAbstractTableModel):
@@ -48,11 +58,19 @@ class TransactionTableModel(QAbstractTableModel):
         self.rows: list[Transaction] = []
         self.category_names: dict[int, str] = {}
         self.date_format = "%Y-%m-%d"
+        self.highlight, self.style = "none", "tint"
 
     def set_rows(self, rows: list[Transaction], category_names: dict[int, str], date_format: str) -> None:
         self.beginResetModel()  # tells attached views to drop everything and re-ask
         self.rows, self.category_names, self.date_format = rows, category_names, date_format
+        self.highlight, self.style = row_highlight(), highlight_style()  # read once, not per cell
         self.endResetModel()
+
+    def _highlight_color(self, tx: Transaction) -> QColor | None:
+        # income rows stand out, and expense rows too when chosen; colors follow the user's choices
+        if self.highlight == "none" or (self.highlight == "income" and tx.amount_cents < 0):
+            return None
+        return amount_color(tx.amount_cents)
 
     def rowCount(self, parent=QModelIndex()):
         return 0 if parent.isValid() else len(self.rows)
@@ -77,7 +95,41 @@ class TransactionTableModel(QAbstractTableModel):
             return amount_color(tx.amount_cents)
         if role == Qt.ItemDataRole.TextAlignmentRole and col == 3:
             return Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        if role == Qt.ItemDataRole.BackgroundRole and self.style == "tint":
+            if color := self._highlight_color(tx):
+                tint = QColor(color)
+                tint.setAlphaF(TINT_STRENGTH)
+                return tint  # wins over striped rows
+        if role == HIGHLIGHT_ROLE and self.style == "strip":
+            return self._highlight_color(tx)
+        if role == STRIP_SPACE_ROLE:
+            return self.style == "strip" and self.highlight != "none"
         return None
+
+
+class StripDelegate(QStyledItemDelegate):
+    # draws a thin colored bar down the cell's left edge, with the text moved over to make room
+    def paint(self, painter, option, index):
+        if not index.data(STRIP_SPACE_ROLE):
+            super().paint(painter, option, index)
+            return
+        # background first (selection, stripes) across the whole cell, then the text shifted right
+        background = QStyleOptionViewItem(option)
+        self.initStyleOption(background, index)
+        style = background.widget.style() if background.widget else QApplication.style()
+        style.drawPrimitive(QStyle.PrimitiveElement.PE_PanelItemViewItem, background, painter, background.widget)
+        shifted = QStyleOptionViewItem(option)
+        shifted.rect = option.rect.adjusted(STRIP_WIDTH + STRIP_GAP, 0, 0, 0)
+        super().paint(painter, shifted, index)
+        if color := index.data(HIGHLIGHT_ROLE):  # only highlighted rows get the bar
+            rect = option.rect
+            painter.fillRect(QRect(rect.left(), rect.top(), STRIP_WIDTH, rect.height()), color)
+
+    def sizeHint(self, option, index):
+        # room for the strip, so the column sized to its contents doesn't cut the date off
+        size = super().sizeHint(option, index)
+        size.setWidth(size.width() + STRIP_WIDTH + STRIP_GAP)
+        return size
 
 
 class TransactionDialog(QDialog):
@@ -149,6 +201,10 @@ class TransactionsView(QWidget):
         # Filter bar
         self.month = QComboBox()
         self.category = QComboBox()
+        self.kind = QComboBox()
+        for label, value in (("All types", None), ("Income", INCOME), ("Expenses", EXPENSE)):
+            self.kind.addItem(label, value)
+        self.kind.currentIndexChanged.connect(self.reload_table)
         self.search = QLineEdit()
         self.search.setPlaceholderText("Search descriptions…")
         self.search.setClearButtonEnabled(True)
@@ -184,6 +240,7 @@ class TransactionsView(QWidget):
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().hide()
         fit_columns(self.table, stretch=1)  # description
+        self.table.setItemDelegateForColumn(0, StripDelegate(self.table))
         self.table.doubleClicked.connect(self.edit)
         self.table.selectionModel().selectionChanged.connect(self.update_buttons)
 
@@ -193,6 +250,7 @@ class TransactionsView(QWidget):
         bar.addStretch()
         bar.addWidget(self.month)
         bar.addWidget(self.category)
+        bar.addWidget(self.kind)
         bar.addWidget(self.search)
 
         layout = QVBoxLayout(self)
@@ -212,7 +270,9 @@ class TransactionsView(QWidget):
         self.reload_table()
 
     def reload_table(self) -> None:
-        rows = self.transactions.list(self.month.currentData(), self.category.currentData(), self.search.text())
+        rows = self.transactions.list(
+            self.month.currentData(), self.category.currentData(), self.search.text(), self.kind.currentData()
+        )
         self.model.set_rows(rows, {c.id: c.name for c in self._category_list}, date_format())
         t = totals(rows)
         if t.count:
@@ -220,7 +280,12 @@ class TransactionsView(QWidget):
                 f"{count(t.count, 'transaction')}  ·  Income {format_cents(t.income_cents)}  ·  "
                 f"Expenses {format_cents(t.expense_cents)}  ·  Net {format_cents(t.net_cents)}"
             )
-        elif self.month.currentData() or self.category.currentData() is not None or self.search.text():
+        elif (
+            self.month.currentData()
+            or self.category.currentData() is not None
+            or self.search.text()
+            or self.kind.currentData()
+        ):
             self.summary.setText("No transactions match these filters.")
         else:
             self.summary.setText("No transactions yet. Click “Import…” to load a CSV or PDF statement from your bank.")

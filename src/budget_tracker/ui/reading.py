@@ -13,6 +13,9 @@ FONTS = {
     "opendyslexic": ("OpenDyslexic", "OpenDyslexic"),
 }
 TEXT_SIZES = {"100": "100%", "125": "125%", "150": "150%"}
+# which transaction rows stand out, and how. colors come from the income/expense colors
+ROW_HIGHLIGHTS = {"none": "None", "income": "Income only", "both": "Income and expenses"}
+HIGHLIGHT_STYLES = {"tint": "Tinted rows", "strip": "Left edge strip"}
 
 _system_font: QFont | None = None  # the font the app started with, so sizes don't compound
 
@@ -31,6 +34,16 @@ def font_choice() -> str:
 def text_size() -> str:
     value = app_settings().value("reading/text_size", "100")
     return value if value in TEXT_SIZES else "100"
+
+
+def row_highlight() -> str:
+    value = app_settings().value("reading/row_highlight", "none")
+    return value if value in ROW_HIGHLIGHTS else "none"
+
+
+def highlight_style() -> str:
+    value = app_settings().value("reading/highlight_style", "tint")
+    return value if value in HIGHLIGHT_STYLES else "tint"
 
 
 def striped_rows() -> bool:

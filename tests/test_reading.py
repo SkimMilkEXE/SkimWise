@@ -78,7 +78,7 @@ def test_reading_menu_saves_and_asks_for_a_fresh_window(app):
     menu = window.tabs.cornerWidget().menu()
     reading_menu = next(a.menu() for a in menu.actions() if a.text() == "&Reading")
     items = {a.text().replace("&", ""): a for a in reading_menu.actions()}
-    assert set(items) == {"Font", "Text size", "Striped table rows"}
+    assert set(items) == {"Font", "Text size", "Row highlight", "Highlight style", "Striped table rows"}
 
     next(a for a in items["Font"].menu().actions() if a.text() == "OpenDyslexic").trigger()
     items["Striped table rows"].trigger()
