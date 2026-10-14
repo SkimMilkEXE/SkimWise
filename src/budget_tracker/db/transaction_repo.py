@@ -4,7 +4,7 @@ import sqlite3
 from dataclasses import replace
 from datetime import date
 
-from budget_tracker.models import NO_CATEGORY, Transaction
+from budget_tracker.models import EXPENSE, INCOME, NO_CATEGORY, Transaction
 
 _COLUMNS = "id, date, description, amount_cents, category_id"
 
@@ -18,9 +18,15 @@ class TransactionRepository:
     def __init__(self, conn: sqlite3.Connection):
         self.conn = conn
 
-    def list(self, month: str | None = None, category_id: int | None = None, search: str = "") -> list[Transaction]:
+    def list(
+        self, month: str | None = None, category_id: int | None = None, search: str = "", kind: str | None = None
+    ) -> list[Transaction]:
         """month is "YYYY-MM"; None/empty arguments mean "don't filter on this"."""
         where, params = [], []
+        if kind == INCOME:
+            where.append("amount_cents > 0")
+        elif kind == EXPENSE:
+            where.append("amount_cents < 0")
         if month:
             where.append("substr(date, 1, 7) = ?")
             params.append(month)

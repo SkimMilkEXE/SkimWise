@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 
 NO_CATEGORY = 0  # category filter value meaning "uncategorized" (real ids start at 1)
+INCOME, EXPENSE = "income", "expense"  # type filter values
 
 
 @dataclass(frozen=True)

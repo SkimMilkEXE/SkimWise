@@ -16,8 +16,10 @@ class TransactionService:
     def __init__(self, repo: TransactionRepository):
         self.repo = repo
 
-    def list(self, month: str | None = None, category_id: int | None = None, search: str = "") -> list[Transaction]:
-        return self.repo.list(month, category_id, search.strip())
+    def list(
+        self, month: str | None = None, category_id: int | None = None, search: str = "", kind: str | None = None
+    ) -> list[Transaction]:
+        return self.repo.list(month, category_id, search.strip(), kind)
 
     def months(self) -> list[str]:
         return self.repo.months()
