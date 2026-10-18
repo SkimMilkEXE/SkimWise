@@ -2,11 +2,11 @@ from datetime import date
 
 import pytest
 
-from budget_tracker.db.category_repo import CategoryRepository
-from budget_tracker.db.connection import connect
-from budget_tracker.db.transaction_repo import TransactionRepository
-from budget_tracker.services.reports import UNCATEGORIZED, ReportService, months_ending
-from budget_tracker.services.transactions import TransactionService
+from skimwise.db.category_repo import CategoryRepository
+from skimwise.db.connection import connect
+from skimwise.db.transaction_repo import TransactionRepository
+from skimwise.services.reports import UNCATEGORIZED, ReportService, months_ending
+from skimwise.services.transactions import TransactionService
 
 
 @pytest.fixture

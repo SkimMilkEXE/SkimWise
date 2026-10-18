@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from budget_tracker.db.connection import connect
-from budget_tracker.db.profile_repo import ProfileRepository
-from budget_tracker.db.rule_repo import RuleRepository
-from budget_tracker.db.transaction_repo import TransactionRepository
-from budget_tracker.models import BankProfile
-from budget_tracker.services.csv_import import (
+from skimwise.db.connection import connect
+from skimwise.db.profile_repo import ProfileRepository
+from skimwise.db.rule_repo import RuleRepository
+from skimwise.db.transaction_repo import TransactionRepository
+from skimwise.models import BankProfile
+from skimwise.services.csv_import import (
     DUPLICATE,
     ERROR,
     NEW,

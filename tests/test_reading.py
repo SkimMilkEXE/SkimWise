@@ -5,14 +5,14 @@ from PySide6.QtCore import QSettings
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication, QTableWidget
 
-import budget_tracker.ui.colors as colors
-import budget_tracker.ui.reading as reading
-import budget_tracker.ui.settings as settings
-from budget_tracker.db.connection import connect
-from budget_tracker.services.app_services import build_services
-from budget_tracker.ui.main_window import MainWindow
+import skimwise.ui.colors as colors
+import skimwise.ui.reading as reading
+import skimwise.ui.settings as settings
+from skimwise.db.connection import connect
+from skimwise.services.app_services import build_services
+from skimwise.ui.main_window import MainWindow
 
-FONTS = Path(__file__).parent.parent / "src" / "budget_tracker" / "assets" / "fonts"
+FONTS = Path(__file__).parent.parent / "src" / "skimwise" / "assets" / "fonts"
 
 
 @pytest.fixture(autouse=True)
@@ -88,7 +88,7 @@ def test_reading_menu_saves_and_asks_for_a_fresh_window(app):
 
 
 def test_rebuilt_window_keeps_the_same_data_and_picks_up_stripes():
-    from budget_tracker.main import WindowSwitcher
+    from skimwise.main import WindowSwitcher
 
     switcher = WindowSwitcher(connect(":memory:"))
     switcher.show_real()

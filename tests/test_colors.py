@@ -3,11 +3,11 @@ from PySide6.QtCore import QSettings
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication
 
-import budget_tracker.ui.colors as colors
-import budget_tracker.ui.settings as settings
-from budget_tracker.services.budgets import NEAR, OK, OVER, BudgetLine
-from budget_tracker.ui.colors import CUSTOM, DARK, LIGHT, contrast, readability_warning
-from budget_tracker.ui.colors_dialog import ColorsDialog
+import skimwise.ui.colors as colors
+import skimwise.ui.settings as settings
+from skimwise.services.budgets import NEAR, OK, OVER, BudgetLine
+from skimwise.ui.colors import CUSTOM, DARK, LIGHT, contrast, readability_warning
+from skimwise.ui.colors_dialog import ColorsDialog
 
 WHITE, DARK_GREY = QColor("#ffffff"), QColor("#2b2b2b")
 
@@ -59,7 +59,7 @@ def test_dialog_pick_preview_save_and_reset(monkeypatch):
     assert dialog.preset_box.currentText() == "Standard" and dialog.mode == LIGHT
 
     monkeypatch.setattr(
-        "budget_tracker.ui.colors_dialog.QColorDialog.getColor", lambda *_: QColor("#ffee88")
+        "skimwise.ui.colors_dialog.QColorDialog.getColor", lambda *_: QColor("#ffee88")
     )  # user picks a pale yellow for expenses
     dialog.pick("expense")
     assert dialog.preset_box.currentText() == "Custom"
@@ -76,13 +76,13 @@ def test_dialog_pick_preview_save_and_reset(monkeypatch):
 
 def test_cancelling_the_color_picker_changes_nothing(monkeypatch):
     dialog = ColorsDialog(None)
-    monkeypatch.setattr("budget_tracker.ui.colors_dialog.QColorDialog.getColor", lambda *_: QColor())  # cancel
+    monkeypatch.setattr("skimwise.ui.colors_dialog.QColorDialog.getColor", lambda *_: QColor())  # cancel
     dialog.pick("income")
     assert dialog.preset_box.currentText() == "Standard"
 
 
 def test_budget_status_is_in_words_not_just_color():
-    from budget_tracker.ui.budgets_view import STATUS_WORDS
+    from skimwise.ui.budgets_view import STATUS_WORDS
 
     assert STATUS_WORDS == {NEAR: "near limit", OVER: "over budget"}
     assert BudgetLine(1, "x", 10000, 9000).level == NEAR  # 90% -> "near limit" in the Used column
@@ -118,7 +118,7 @@ def test_dialog_checks_colors_against_the_chosen_background(monkeypatch):
     assert not dialog.background_default.isEnabled()  # already the theme default
     assert dialog.warnings["income"].text() == ""
 
-    monkeypatch.setattr("budget_tracker.ui.colors_dialog.QColorDialog.getColor", lambda *_: QColor("#1f3a5f"))
+    monkeypatch.setattr("skimwise.ui.colors_dialog.QColorDialog.getColor", lambda *_: QColor("#1f3a5f"))
     dialog.pick_background()
     assert "Hard to see" in dialog.warnings["income"].text()  # dark green amounts on dark navy
     assert dialog.preset_box.currentText() == "Standard"  # a background doesn't make the preset custom

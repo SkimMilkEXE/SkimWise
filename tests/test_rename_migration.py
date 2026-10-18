@@ -1,7 +1,7 @@
 from PySide6.QtCore import QSettings
 
-from budget_tracker.main import OLD_NAME, copy_old_settings, move_old_data_dir
-from budget_tracker.ui.settings import APP_NAME
+from skimwise.main import OLD_NAME, copy_old_settings, move_old_data_dir
+from skimwise.ui.settings import APP_NAME
 
 
 def test_old_data_folder_moves_once(tmp_path):

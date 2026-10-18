@@ -3,14 +3,14 @@ from pathlib import Path
 
 import pytest
 
-from budget_tracker.db.connection import connect
-from budget_tracker.db.profile_repo import ProfileRepository
-from budget_tracker.db.recurring_repo import RecurringRepository
-from budget_tracker.db.rule_repo import RuleRepository
-from budget_tracker.db.transaction_repo import TransactionRepository
-from budget_tracker.models import MONTHLY, YEARLY, RecurringItem, Transaction
-from budget_tracker.services.csv_import import ImportService, guess_profile, read_rows
-from budget_tracker.services.recurring_detection import RecurringError, RecurringService, detect, merchant, totals
+from skimwise.db.connection import connect
+from skimwise.db.profile_repo import ProfileRepository
+from skimwise.db.recurring_repo import RecurringRepository
+from skimwise.db.rule_repo import RuleRepository
+from skimwise.db.transaction_repo import TransactionRepository
+from skimwise.models import MONTHLY, YEARLY, RecurringItem, Transaction
+from skimwise.services.csv_import import ImportService, guess_profile, read_rows
+from skimwise.services.recurring_detection import RecurringError, RecurringService, detect, merchant, totals
 
 
 def monthly(desc, cents, n, start=date(2026, 1, 5), step=30):
@@ -151,7 +151,7 @@ def test_renaming_a_confirmed_item_doesnt_resuggest_it(service):
 def test_upgrade_fills_in_merchant_for_existing_items():
     import sqlite3
 
-    from budget_tracker.db.connection import MIGRATIONS, migrate
+    from skimwise.db.connection import MIGRATIONS, migrate
 
     conn = sqlite3.connect(":memory:")
     for i, script in enumerate(MIGRATIONS[:6], start=1):  # a database from before the merchant column

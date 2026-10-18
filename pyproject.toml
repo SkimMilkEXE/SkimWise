@@ -1,6 +1,6 @@
 [project]
 name = "skimwise"
-dynamic = ["version"]  # read from budget_tracker/__init__.py
+dynamic = ["version"]  # read from skimwise/__init__.py
 description = "SkimWise: skim the fat off your spending. A private, local-only desktop budget app."
 requires-python = ">=3.12"
 dependencies = ["PySide6>=6.7", "pypdf>=5"]  # pypdf reads PDF bank statements
@@ -10,20 +10,20 @@ dev = ["pytest", "pytest-cov", "ruff", "fpdf2"]  # fpdf2 writes fake PDF stateme
 build = ["pyinstaller"]  # python scripts/build.py -> dist/SkimWise.exe
 
 [project.gui-scripts]
-skimwise = "budget_tracker.main:main"
+skimwise = "skimwise.main:main"
 
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
-version = { attr = "budget_tracker.__version__" }
+version = { attr = "skimwise.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-budget_tracker = ["assets/*", "assets/fonts/*"]  # ship icons and fonts with the package, not just .py files
+skimwise = ["assets/*", "assets/fonts/*"]  # ship icons and fonts with the package, not just .py files
 
 [tool.ruff]
 line-length = 120
