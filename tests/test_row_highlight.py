@@ -5,13 +5,13 @@ from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication
 
-import budget_tracker.ui.colors as colors
-import budget_tracker.ui.settings as settings
-from budget_tracker.db.connection import connect
-from budget_tracker.models import EXPENSE, INCOME
-from budget_tracker.services.app_services import build_services
-from budget_tracker.ui.colors import PRESETS, contrast, preset_colors
-from budget_tracker.ui.transactions_view import (
+import skimwise.ui.colors as colors
+import skimwise.ui.settings as settings
+from skimwise.db.connection import connect
+from skimwise.models import EXPENSE, INCOME
+from skimwise.services.app_services import build_services
+from skimwise.ui.colors import PRESETS, contrast, preset_colors
+from skimwise.ui.transactions_view import (
     HIGHLIGHT_ROLE,
     STRIP_SPACE_ROLE,
     TINT_STRENGTH,

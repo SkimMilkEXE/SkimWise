@@ -3,12 +3,12 @@ from datetime import date
 
 import pytest
 
-from budget_tracker.db.connection import MIGRATIONS, connect
-from budget_tracker.services.app_services import build_services
-from budget_tracker.services.backup import BackupError
-from budget_tracker.services.demo import demo_connection, demo_transactions
-from budget_tracker.services.reports import months_ending
-from budget_tracker.services.transactions import totals
+from skimwise.db.connection import MIGRATIONS, connect
+from skimwise.services.app_services import build_services
+from skimwise.services.backup import BackupError
+from skimwise.services.demo import demo_connection, demo_transactions
+from skimwise.services.reports import months_ending
+from skimwise.services.transactions import totals
 
 
 @pytest.fixture

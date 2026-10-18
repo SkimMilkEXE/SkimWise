@@ -9,15 +9,15 @@ from PySide6.QtCore import QSettings
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-import budget_tracker.ui.colors as colors
-import budget_tracker.ui.settings as settings
-from budget_tracker.db.connection import connect
-from budget_tracker.services.app_services import build_services
-from budget_tracker.services.csv_import import read_rows
-from budget_tracker.services.demo import demo_transactions
-from budget_tracker.ui.import_dialog import ImportDialog
-from budget_tracker.ui.main_window import MainWindow
-from budget_tracker.ui.rules_view import RuleDialog
+import skimwise.ui.colors as colors
+import skimwise.ui.settings as settings
+from skimwise.db.connection import connect
+from skimwise.services.app_services import build_services
+from skimwise.services.csv_import import read_rows
+from skimwise.services.demo import demo_transactions
+from skimwise.ui.import_dialog import ImportDialog
+from skimwise.ui.main_window import MainWindow
+from skimwise.ui.rules_view import RuleDialog
 
 DEMO = Path(__file__).parent / "fixtures" / "demo_transactions.csv"
 
@@ -189,7 +189,7 @@ def test_set_category_on_selection(window, monkeypatch):
     view = import_demo(window)
     select_rows(view, [0, 1, 2, 3])
     chosen = [view.selected_rows()[i].id for i in range(4)]
-    monkeypatch.setattr("budget_tracker.ui.transactions_view.QInputDialog.getItem", lambda *_: ("Dining", True))
+    monkeypatch.setattr("skimwise.ui.transactions_view.QInputDialog.getItem", lambda *_: ("Dining", True))
     view.set_category()
     dining = next(c.id for c in view._category_list if c.name == "Dining")
     assert {t.id: t.category_id for t in view.model.rows if t.id in chosen} == dict.fromkeys(chosen, dining)
@@ -209,7 +209,7 @@ def test_totals_line_follows_filters(window):
 
 
 def test_demo_mode_switches_windows_and_leaves_real_data_alone(window, monkeypatch):
-    from budget_tracker.main import WindowSwitcher
+    from skimwise.main import WindowSwitcher
 
     real = connect(":memory:")
     switcher = WindowSwitcher(real)
@@ -264,7 +264,7 @@ def test_redetect_button_asks_then_restores_dismissed(window, asked):
 
 
 def test_about_shows_version_and_data_folder(window, monkeypatch):
-    from budget_tracker import __version__
+    from skimwise import __version__
 
     shown = []
     monkeypatch.setattr(QMessageBox, "about", lambda _parent, title, text: shown.append((title, text)))
@@ -288,7 +288,7 @@ def test_delete_all_needs_confirmation(window, monkeypatch, button, backup_ok, t
     settings.app_settings().setValue("welcome_shown", True)
     monkeypatch.setattr(QMessageBox, "exec", lambda box: next(b for b in box.buttons() if b.text() == button).click())
     monkeypatch.setattr(window, "back_up", lambda: backup_ok)
-    monkeypatch.setattr("budget_tracker.ui.main_window.QInputDialog.getText", lambda *_: (typed, True))
+    monkeypatch.setattr("skimwise.ui.main_window.QInputDialog.getText", lambda *_: (typed, True))
 
     window.delete_all()
     remaining = window.transactions_view.proxy.rowCount()
@@ -301,7 +301,7 @@ def test_import_button_accepts_pdf_statements(window, monkeypatch, tmp_path):
 
     pdf = make_pdf(tmp_path / "statement.pdf", MT_STATEMENT)
     view = tab(window, "Transactions")
-    monkeypatch.setattr("budget_tracker.ui.transactions_view.QFileDialog.getOpenFileName", lambda *_: (str(pdf), ""))
+    monkeypatch.setattr("skimwise.ui.transactions_view.QFileDialog.getOpenFileName", lambda *_: (str(pdf), ""))
     monkeypatch.setattr(ImportDialog, "exec", lambda self: (self.accept(), self.result())[1])  # user clicks Import
     view.import_csv()
     assert view.proxy.rowCount() == 5
@@ -321,7 +321,7 @@ def test_import_dialog_shows_which_line_has_the_column_names(window, tmp_path):
     assert dialog.summary.text().startswith("6 new") and dialog.current_profile().skip_rows == 4  # stored as before
 
     pdf = make_pdf(tmp_path / "statement.pdf", MT_STATEMENT)
-    from budget_tracker.services.pdf_import import read_statement
+    from skimwise.services.pdf_import import read_statement
 
     pdf_dialog = ImportDialog(window, window.services.importer, pdf, read_statement(pdf), {})
     assert pdf_dialog.header_line.isHidden()  # not relevant to PDF statements

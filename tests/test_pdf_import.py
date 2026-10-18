@@ -3,10 +3,10 @@ from datetime import date
 import pytest
 from fpdf import FPDF
 
-from budget_tracker.db.connection import connect
-from budget_tracker.services.app_services import build_services
-from budget_tracker.services.csv_import import DUPLICATE, NEW, CsvImportError, guess_header_row, guess_profile
-from budget_tracker.services.pdf_import import read_statement, statement_rows
+from skimwise.db.connection import connect
+from skimwise.services.app_services import build_services
+from skimwise.services.csv_import import DUPLICATE, NEW, CsvImportError, guess_header_row, guess_profile
+from skimwise.services.pdf_import import read_statement, statement_rows
 
 # Modelled on a typical US checking statement (M&T-style): dates without a year, a statement
 # period in the header, separate deposit/withdrawal sections, and a daily balance table.

@@ -2,13 +2,13 @@ from datetime import date
 
 import pytest
 
-from budget_tracker.db.category_repo import CategoryRepository
-from budget_tracker.db.connection import connect
-from budget_tracker.db.transaction_repo import TransactionRepository
-from budget_tracker.models import NO_CATEGORY
-from budget_tracker.services.categories import CategoryService
-from budget_tracker.services.money import format_cents, parse_cents
-from budget_tracker.services.transactions import TransactionError, TransactionService
+from skimwise.db.category_repo import CategoryRepository
+from skimwise.db.connection import connect
+from skimwise.db.transaction_repo import TransactionRepository
+from skimwise.models import NO_CATEGORY
+from skimwise.services.categories import CategoryService
+from skimwise.services.money import format_cents, parse_cents
+from skimwise.services.transactions import TransactionError, TransactionService
 
 
 @pytest.mark.parametrize(

@@ -1,8 +1,8 @@
 import pytest
 
-from budget_tracker.db.category_repo import CategoryRepository
-from budget_tracker.db.connection import MIGRATIONS, connect, migrate
-from budget_tracker.services.categories import CategoryError, CategoryService
+from skimwise.db.category_repo import CategoryRepository
+from skimwise.db.connection import MIGRATIONS, connect, migrate
+from skimwise.services.categories import CategoryError, CategoryService
 
 
 @pytest.fixture

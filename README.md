@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/budget_tracker/assets/budget-icon.png" width="96" alt="SkimWise icon">
+  <img src="src/skimwise/assets/budget-icon.png" width="96" alt="SkimWise icon">
 </p>
 
 <h1 align="center">SkimWise</h1>
@@ -68,8 +68,8 @@ Needs [Python 3.12+](https://www.python.org/downloads/).
 python -m venv .venv
 .venv\Scripts\activate                   # Linux/macOS: source .venv/bin/activate
 pip install -e ".[dev]"
-python -m budget_tracker                 # run
-python -m pytest --cov=budget_tracker    # run the tests
+python -m skimwise                 # run
+python -m pytest --cov=skimwise    # run the tests
 pip install -e ".[build]"
 python scripts/build.py                  # build the release exe into dist/
 ```
@@ -85,7 +85,7 @@ python scripts/build.py                  # build the release exe into dist/
 - pytest tests for the core logic (CSV and PDF parsing, rules, budgets, recurring detection, backup/restore) plus headless UI tests that drive the real window, linted and formatted with [ruff](https://docs.astral.sh/ruff/)
 
 ```
-src/budget_tracker/
+src/skimwise/
   models/     transactions, categories, rules, bank profiles, recurring items
   db/         database connection, migrations and repositories (all the SQL)
   services/   csv and pdf import, rules, budgets, reports, recurring detection, backup, demo data
